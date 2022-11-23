@@ -4,11 +4,11 @@ import (
 	
 	"flag"
 	"fmt"
-	"golang.org/x/net/netutil"
+	// "golang.org/x/net/netutil"
 	"html/template"
 	"io"
-	"log"
-	"net"
+	// "log"
+	// "net"
 	"net/http"
 	"os"
 	
@@ -31,44 +31,30 @@ const (
 func main() {
 	var (
 		bindAddr string
-		maxConn  uint64
+		
 	)
 
 	flag.StringVar(&bindAddr, "b", defaultBindAddr, "TCP address the server will bind to")
-	flag.Uint64Var(&maxConn, "c", defaultMaxConn, "maximum number of client connections the server will accept, 0 means unlimited")
 	flag.Parse()
-	// file := http.FileServer(http.Dir("uploads"))
+	file := http.FileServer(http.Dir("uploads"))
 
-	router := http.NewServeMux()
-	router.HandleFunc("/", handleRequest)
-	router.HandleFunc("/upload", uploadHandler)
-	// router.Handle("/static/", http.StripPrefix("/static/", file))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handleRequest)
+	mux.HandleFunc("/upload", uploadHandler)
+	mux.Handle("/static/", http.StripPrefix("/static/", file))
 
-	srv := &http.Server{
-		ReadHeaderTimeout: time.Second * 5,
-		ReadTimeout:       time.Second * 10,
-		Handler:           router,
-	}
-
-	listener, err := net.Listen("tcp", ":7070")
-	if err != nil {
-		log.Fatal(err)
-	}
-	srv.Serve(listener)
-	if maxConn > 0 {
-		listener = netutil.LimitListener(listener, int(maxConn))
-
-		log.Printf("max connections set to %d\n", maxConn)
-	}
-	defer listener.Close()
-
-	log.Printf("listening on %s\n", listener.Addr().String())
-
-	go func() {
-		if err := srv.Serve(listener); err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
+	server := &http.Server{
+		Addr: bindAddr,
+		Handler: mux,
 		}
-	}()
+	server.ListenAndServe() 
+
+	// listener, err := net.Listen("tcp", ":7070")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// srv.Serve(listener)
+	
 
 	
 }
