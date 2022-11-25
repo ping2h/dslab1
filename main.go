@@ -23,7 +23,7 @@ type Progress struct {
 }
 
 const (
-	defaultBindAddr = ":8090"
+	defaultBindAddr = ":9990"
 	MAX_UPLOAD_SIZE = 1024 * 1024
 	defaultMaxConn  = 0
 )
@@ -113,8 +113,8 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			filetype := http.DetectContentType(buff)
-			if filetype != "image/jpeg" && filetype != "image/png" {
-				http.Error(w, "The provided file format is not allowed. Please upload a JPEG or PNG image", http.StatusBadRequest)
+			if filetype != "image/jpeg" && filetype != "image/png" && filetype != "image/gif" && filetype != "text/html" && filetype != "text/plain" && filetype != "text/css"{
+				http.Error(w, "The provided file format is not allowed. Please upload text/html, text/plain, image/gif, image/jpeg, image/jpeg, or text/css", http.StatusBadRequest)
 				return
 			}
 
